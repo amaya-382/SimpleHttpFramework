@@ -1,27 +1,62 @@
 package simplehttpserver
 
-import simplehttpserver.impl._
+import java.io.{ByteArrayOutputStream, FileInputStream}
 
-import scala.collection.immutable.HashMap
+import simplehttpserver.impl._
+import simplehttpserver.util.Util._
+import simplehttpserver.util.Implicit._
+
+import scala.sys.process.BasicIO
 
 
 object Controller {
   type Action = HttpRequest => HttpResponse
   val builder = new HtmlBuilder()
 
-  def default: Action = implicit req => {
-    HttpResponse(Ok, HashMap(), "<p>welcome!</p>")
+
+  //TODO: Content-Typeの決定タイミングがバラバラ. Content-Typeとbodyはセットで生成されるべき
+
+  def root: Action = req => {
+    val contentType = "Content-Type" -> html.contentType
+    HttpResponse(req)(
+      Ok,
+      header = Map(contentType),
+      body = "<p>welcome!</p>")
   }
 
-  def echo: Action = implicit req => {
-    HttpResponse(Ok, HashMap(), s"<p>${req.req}</p><p>${req.header.mkString}</p>")
+  def any: Action = req => {
+    findAsset(req.req._2) match {
+      case Some(file) =>
+        println("asset found!")
+        val out = new ByteArrayOutputStream()
+        BasicIO.transferFully(new FileInputStream(file), out)
+
+        HttpResponse(req)(
+          Ok, body = out.toByteArray)
+      case None =>
+        emitResponseFromFile(req)(NotFound, "404.html")
+    }
   }
 
-  def postPage: Action = implicit req => {
-    HttpResponse(Ok, HashMap(), builder.buildHtml)
+  def echo: Action = req => {
+    val contentType = "Content-Type" -> html.contentType
+
+    HttpResponse(req)(
+      Ok,
+      header = Map(contentType),
+      body = s"<p>${req.req}</p><p>${req.header.mkString}</p>")
   }
 
-  def blank: Action = implicit req => {
-    HttpResponse(Ok, HashMap(), "")
+  def postPage: Action = req => {
+    val contentType = "Content-Type" -> html.contentType
+
+    HttpResponse(req)(
+      Ok,
+      header = Map(contentType),
+      body = builder.buildHtml)
+  }
+
+  def blank: Action = req => {
+    emitResponseFromFile(req)(Ok, "blank.html")
   }
 }

@@ -2,13 +2,12 @@ package simplehttpserver
 
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
 import java.net.{InetSocketAddress, ServerSocket, Socket, URLDecoder}
-import java.util.{Date, Locale}
 
 import simplehttpserver.impl._
 import simplehttpserver.util.Util._
+import simplehttpserver.util.Implicit._
 
 import scala.annotation.tailrec
-import scala.collection.immutable.HashMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -45,7 +44,7 @@ case class HttpServer(port: Int) {
           case Right(r) =>
             router.routing(r)
           case Left(e) =>
-            HttpResponse(InternalServerError, HashMap(), s"<p>Internal Server Error…</p><p>$e</p>")(null)
+            emitResponseFromFile(null)(InternalServerError, "500.html")
         }
         using(new PrintStream(socket.getOutputStream)) {
           out => response(out, res)
@@ -56,21 +55,21 @@ case class HttpServer(port: Int) {
 
   private def response(ps: PrintStream, res: HttpResponse): Unit = {
     //response
-    if (res.req != null)
-      ps.println(s"${res.req.req._3.toString} ${res.status.code} ${res.status.toString}")
-    else
-      ps.println(s"HTTP/1.1 ${res.status.code} ${res.status.toString}")
+    res.reqOpt match {
+      case Some(req) =>
+        ps.println(s"${req.req._3} ${res.status.code} ${res.status}")
+      case None =>
+        ps.println(s"HTTP/1.1 ${res.status.code} ${res.status}")
+    }
+
 
     //header
-    ps.println("Date: " + "%ta, %<td %<tb %<tY %<tT %<tz" formatLocal(Locale.ENGLISH, new Date))
-    ps.println("Server: Simple Http Server")
-    ps.println("Content-type: text/html") /////////////////////
     res.header.map(kv => kv._1 + ": " + kv._2).foreach(ps.println)
 
     ps.println()
 
     //body
-    ps.println(res.body)
+    ps.write(res.body)
 
     ps.flush()
   }
@@ -86,35 +85,36 @@ case class HttpServer(port: Int) {
             throw new Exception("fail in reading request")
         }
 
-      request._1 match {
-        case Some(rGET(cont, ver)) =>
+      URLDecoder.decode(request._1 getOrElse "", "utf-8") match {
+        case rGET(cont, ver) =>
           println(s"get: $cont")
           Right(HttpRequest((GET, cont, HttpVersion(ver)), request._2))
-        case Some(rPOST(cont, ver)) =>
+        case rPOST(cont, ver) =>
           println(s"post: $cont")
           Right(HttpRequest((POST, cont, HttpVersion(ver)), request._2, request._3))
-        case Some(rPUT(cont, ver)) =>
+        case rPUT(cont, ver) =>
           println(s"put: $cont")
           Right(HttpRequest((PUT, cont, HttpVersion(ver)), request._2, request._3))
-        case Some(rDELETE(cont, ver)) =>
+        case rDELETE(cont, ver) =>
           println(s"del: $cont")
           Right(HttpRequest((DELETE, cont, HttpVersion(ver)), request._2))
         case _ =>
           println("opp")
           Left(new Exception("request didn't match"))
       }
-    } catch {
+    }
+    catch {
       case _: Throwable =>
         Left(new Exception("fail in parsing request"))
     }
   }
 
-  private def readRequest(isr: InputStreamReader): (Option[String], HashMap[String, String], Option[String]) = {
+  private def readRequest(isr: InputStreamReader): (Option[String], Map[String, String], Option[String]) = {
     val br = new BufferedReader(isr)
     val request = br.readLine()
 
     @tailrec
-    def go(map: HashMap[String, String] = HashMap()): HashMap[String, String] = {
+    def go(map: Map[String, String] = Map()): Map[String, String] = {
       val line = br.readLine()
 
       if (line == null || line == "") map

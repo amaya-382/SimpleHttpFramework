@@ -1,18 +1,20 @@
 package simplehttpserver
 
 import simplehttpserver.impl._
+import simplehttpserver.util.Util._
 
-import scala.collection.immutable.{HashMap, ListMap}
+import scala.collection.immutable.ListMap
 import scala.util.matching.Regex
 
-
+//TODO: errやblankといったページは外部に静的ファイルとして分離する
 object Router {
   //ここでルーティングの設定を行う
   val routes = ListMap[(Method, Regex), HttpRequest => HttpResponse](
-    (GET -> """^/postPage""".r) -> Controller.postPage,
-    (GET -> """^/echo""".r) -> Controller.echo,
-    (POST -> """^/blank""".r) -> Controller.blank,
-    (GET -> """^/.*""".r) -> Controller.default
+    (GET -> """^/postPage$""".r) -> Controller.postPage,
+    (GET -> """^/echo$""".r) -> Controller.echo,
+    (GET -> """^/blank$""".r) -> Controller.blank,
+    (GET -> """^/$""".r) -> Controller.root,
+    (GET -> """^/.+""".r) -> Controller.any
   )
 }
 class Router {
@@ -23,7 +25,7 @@ class Router {
       case Some(re) =>
         re._2(req)
       case None =>
-        HttpResponse(NotFound, HashMap(), "<h2>404 Not Found</h2><hr>") //TODO: impl err
+        emitResponseFromFile(req)(NotFound, "404.html")
     }
   }
 }
