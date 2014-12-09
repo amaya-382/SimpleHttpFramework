@@ -5,7 +5,6 @@ import java.net.{InetSocketAddress, ServerSocket, Socket, URLDecoder}
 
 import simplehttpserver.impl._
 import simplehttpserver.util.Util._
-import simplehttpserver.util.Implicit._
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -84,8 +83,8 @@ case class HttpServer(port: Int) {
             println(ex)
             throw new Exception("fail in reading request")
         }
-//TODO:デコード位置おかしい
-      URLDecoder.decode(request._1 getOrElse "", "utf-8") match {
+
+      request._1 getOrElse "" match {
         case rGET(cont, ver) =>
           println(s"get: $cont")
           Right(HttpRequest((GET, cont, HttpVersion(ver)), request._2))
@@ -109,7 +108,8 @@ case class HttpServer(port: Int) {
     }
   }
 
-  private def readRequest(isr: InputStreamReader): (Option[String], Map[String, String], Option[String]) = {
+  private def readRequest(isr: InputStreamReader)
+  : (Option[String], Map[String, String], Option[String]) = {
     val br = new BufferedReader(isr)
     val request = br.readLine()
 
@@ -131,7 +131,7 @@ case class HttpServer(port: Int) {
     val header = go()
     (
       //request
-      if (request != null) Some(request) else None,
+      if (request != null) Some(URLDecoder.decode(request, "utf-8")) else None,
       //header
       header,
       //body if exists
