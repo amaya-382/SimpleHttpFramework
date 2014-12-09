@@ -1,11 +1,12 @@
 package simplehttpserver.util
 
-import java.io.File
+import java.io.{FileInputStream, ByteArrayOutputStream, File}
 
 import simplehttpserver.impl._
 import simplehttpserver.util.Implicit._
 
 import scala.io.Source
+import scala.sys.process.BasicIO
 
 object Util {
   val path2Assets = "./public"
@@ -68,6 +69,17 @@ object Util {
         src.close()
       }
     } else None
+  }
+
+  def getByteArrayFromFile(file: File): Array[Byte] = {
+    try {
+      val out = new ByteArrayOutputStream()
+      BasicIO.transferFully(new FileInputStream(file), out)
+      out.toByteArray
+    } catch {
+      case _: Throwable =>
+        Array()
+    }
   }
 
   def emitResponseFromFile(req: HttpRequest)

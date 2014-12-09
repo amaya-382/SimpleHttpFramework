@@ -1,12 +1,8 @@
 package simplehttpserver
 
-import java.io.{ByteArrayOutputStream, FileInputStream}
-
 import simplehttpserver.impl._
 import simplehttpserver.util.Util._
 import simplehttpserver.util.Implicit._
-
-import scala.sys.process.BasicIO
 
 
 object Controller {
@@ -28,11 +24,9 @@ object Controller {
     findAsset(req.req._2) match {
       case Some(file) =>
         println("asset found!")
-        val out = new ByteArrayOutputStream()
-        BasicIO.transferFully(new FileInputStream(file), out)
-//TODO: ファイルからの読み込みを分離
+        val cont = getByteArrayFromFile(file)
         HttpResponse(req)(
-          Ok, body = out.toByteArray)
+          Ok, body = cont)
       case None =>
         emitResponseFromFile(req)(NotFound, "404.html")
     }
