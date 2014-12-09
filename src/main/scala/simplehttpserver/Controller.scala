@@ -30,7 +30,7 @@ object Controller {
         println("asset found!")
         val out = new ByteArrayOutputStream()
         BasicIO.transferFully(new FileInputStream(file), out)
-
+//TODO: ファイルからの読み込みを分離
         HttpResponse(req)(
           Ok, body = out.toByteArray)
       case None =>

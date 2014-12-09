@@ -84,7 +84,7 @@ case class HttpServer(port: Int) {
             println(ex)
             throw new Exception("fail in reading request")
         }
-
+//TODO:デコード位置おかしい
       URLDecoder.decode(request._1 getOrElse "", "utf-8") match {
         case rGET(cont, ver) =>
           println(s"get: $cont")
