@@ -23,6 +23,10 @@ case class HttpServer(port: Int) {
   private val rPOST = """(?i)^POST\s([^\s]+)\sHTTP/(.+)$""".r
   private val rPUT = """(?i)^PUT\s([^\s]+)\sHTTP/(.+)$""".r
   private val rDELETE = """(?i)^DELETE\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rHEAD = """(?i)^HEAD\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rOPTIONS = """(?i)^OPTIONS\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rTRACE = """(?i)^TRACE\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rCONNECT = """(?i)^CONNECT\s([^\s]+)\sHTTP/(.+)$""".r
 
 
   def start(): Unit = {
@@ -97,8 +101,20 @@ case class HttpServer(port: Int) {
         case rDELETE(cont, ver) =>
           println(s"del: $cont")
           Right(HttpRequest((DELETE, cont, HttpVersion(ver)), request._2))
+        case rHEAD(cont, ver) =>
+          println(s"head: $cont")
+          Right(HttpRequest((HEAD, cont, HttpVersion(ver)), request._2, request._3))
+        case rOPTIONS(cont, ver) =>
+          println(s"opt: $cont")
+          Right(HttpRequest((OPTIONS, cont, HttpVersion(ver)), request._2, request._3))
+        case rTRACE(cont, ver) =>
+          println(s"trc: $cont")
+          Right(HttpRequest((TRACE, cont, HttpVersion(ver)), request._2, request._3))
+        case rCONNECT(cont, ver) =>
+          println(s"cct: $cont")
+          Right(HttpRequest((CONNECT, cont, HttpVersion(ver)), request._2, request._3))
         case _ =>
-          println("opp")
+          println("oops!")
           Left(new Exception("request didn't match"))
       }
     }
