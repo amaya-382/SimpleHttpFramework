@@ -13,16 +13,16 @@ import scala.concurrent.{Await, Future}
 
 
 case class HttpServer(port: Int) {
-  val server = new ServerSocket()
-  val router = new Router()
+  private val server = new ServerSocket()
+  private val router = new Router()
   server.bind(new InetSocketAddress(port))
   println(s"start http server on $port")
 
   //regex
-  val rGET = """(?i)^GET\s([^\s]+)\sHTTP/(.+)$""".r
-  val rPOST = """(?i)^POST\s([^\s]+)\sHTTP/(.+)$""".r
-  val rPUT = """(?i)^PUT\s([^\s]+)\sHTTP/(.+)$""".r
-  val rDELETE = """(?i)^DELETE\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rGET = """(?i)^GET\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rPOST = """(?i)^POST\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rPUT = """(?i)^PUT\s([^\s]+)\sHTTP/(.+)$""".r
+  private val rDELETE = """(?i)^DELETE\s([^\s]+)\sHTTP/(.+)$""".r
 
 
   def start(): Unit = {

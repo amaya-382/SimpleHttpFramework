@@ -1,32 +1,20 @@
 package simplehttpserver.impl
 
+import scala.annotation.tailrec
+
+//超簡易的なテンプレートエンジン
+//一切エスケープを考慮していないので注意
 class HtmlBuilder {
-  def buildHtml: String = {
-    buildHeader + buildBody
-  }
+  def buildHtml(template: String)(patterns: (String, String)*): String = {
 
-  private def buildHeader: String = {
-    """<head><script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script></head>"""
-  }
+    @tailrec
+    def go(pat: Seq[(String, String)], acc: String): String = {
+      if (pat.size == 0)
+        acc
+      else
+        go(pat.tail, acc.replaceAll(pat.head._1, pat.head._2))
+    }
 
-  private def buildBody: String = {
-    s"""<html><body>$buildContent</body></html>"""
-  }
-
-  private def buildContent: String = {
-    """<p>hello</p><button id="put">☆</button>
-      |<form action="/postTest" method="post">
-      |<p>お名前：<input type="text" name="namae" value="太郎" size="20" /></p>
-      |<p>OS：
-      |<input type="radio" name="OS" value="win" checked="checked" /> Windows
-      |<input type="radio" name="OS" value="mac" /> Machintosh
-      |<input type="radio" name="OS" value="unix" /> Unix
-      |</p>
-      |<p><input type="submit" name="submit" value="送信" /></p>
-      |</form>
-      |<form action="/postTest2" method="post">
-      |<input type="submit" name="submit2" value="sousin" />
-      |</form>
-      |<script>$("#put").click(function(){$.ajax({"url":"/test","data":[1,2,3,4,5],"type":"POST","dataType":"json"})});</script>""".stripMargin
+    go(patterns, template)
   }
 }

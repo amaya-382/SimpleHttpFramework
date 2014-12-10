@@ -10,11 +10,11 @@ import scala.util.matching.Regex
 object Router {
   //ここでルーティングの設定を行う
   val routes = ListMap[(Method, Regex), HttpRequest => HttpResponse](
-    (GET -> """^/postPage$""".r) -> Controller.postPage,
-    (GET -> """^/echo$""".r) -> Controller.echo,
-    (GET -> """^/blank$""".r) -> Controller.blank,
+    (GET -> """^/postPage/?$""".r) -> Controller.postPage,
+    (GET -> """^/echo/?$""".r) -> Controller.echo,
+    (GET -> """^/blank/?$""".r) -> Controller.blank,
     (GET -> """^/$""".r) -> Controller.root,
-    (GET -> """^/.+""".r) -> Controller.any
+    (GET -> """^/.+""".r) -> Controller.asset
   )
 }
 class Router {
