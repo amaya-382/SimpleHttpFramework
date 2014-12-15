@@ -5,10 +5,11 @@ import java.io._
 import simplehttpserver.impl._
 import simplehttpserver.util.Implicit._
 
+import scala.io.Source
 import scala.sys.process.BasicIO
 
 object Util {
-  val path2Assets = "./public"
+  val path2Private = "./private/"
 
   def using[T <: {def close()}, U](resources: T)(func: T => U) = {
     try {
@@ -52,12 +53,6 @@ object Util {
     def apply[T <: {def close()}](value: T) = new Loan(value)
   }
 
-  def findAsset(path: String): Option[File] = {
-    val file = new File(path2Assets + path)
-    if (file.exists && file.isFile) Some(file)
-    else None
-  }
-
   def getContentType(str: String): ContentType = str.dropWhile(_ == '.') match {
     case "htm" | "html" =>
       html
@@ -91,6 +86,21 @@ object Util {
       br <- Loan(new BufferedReader(isr))
     } yield {
       Iterator.continually(br.readLine()).takeWhile(_ != null).mkString
+    }
+  }
+
+  def getStringFromFile(path: String): Option[String] = {
+    val fullPath = path2Private + path
+    val file = new File(fullPath)
+
+    try {
+      if (file.exists && file.isFile)
+        Some(Source.fromFile(file).getLines().mkString)
+      else
+        None
+    } catch {
+      case _: Throwable =>
+        None
     }
   }
 
