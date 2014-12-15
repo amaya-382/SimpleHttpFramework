@@ -58,7 +58,7 @@ object Util {
     else None
   }
 
-  def getContentType(str: String): ContentType = str.dropWhile(_ == ".") match {
+  def getContentType(str: String): ContentType = str.dropWhile(_ == '.') match {
     case "htm" | "html" =>
       html
     case "css" =>
