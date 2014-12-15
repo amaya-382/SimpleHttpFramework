@@ -1,11 +1,11 @@
 SimpleHttpServer
 ================
 
-## requirements
+## Requirements
 * ./private/routingTable.json
 * ./public/{your assets}
 
-## routing table
+## About routing table
 ```json
 [
   {
@@ -16,8 +16,8 @@ SimpleHttpServer
 ]
 ```
 
-## acknowledgement
-* json4s
+## Acknowledgement
+* [json4s](https://github.com/json4s/json4s)
 
-## license
+## License
 ***MIT License***
