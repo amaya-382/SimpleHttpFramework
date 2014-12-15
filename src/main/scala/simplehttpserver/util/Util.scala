@@ -1,27 +1,55 @@
 package simplehttpserver.util
 
-import java.io.{FileInputStream, ByteArrayOutputStream, File}
+import java.io._
 
 import simplehttpserver.impl._
 import simplehttpserver.util.Implicit._
 
-import scala.io.Source
 import scala.sys.process.BasicIO
 
 object Util {
   val path2Assets = "./public"
-  val path2Resources = "./src/main/resources"
 
-  def using[T <: {def close()}, U](resource: T)(func: T => U) = {
+  def using[T <: {def close()}, U](resources: T)(func: T => U) = {
     try {
-      func(resource)
+      func(resources)
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace()
+    } finally {
+      if (resources != null)
+        resources.close()
     }
-    catch {
-      case ex: Exception => ex.printStackTrace()
-    }
-    finally {
-      if (resource != null) resource.close()
-    }
+  }
+
+  class Loan[T <: {def close()}] private(resources: T) {
+    def map[U](func: T => U): Option[U] =
+      try {
+        Option(func(resources))
+      } catch {
+        case ex: Throwable =>
+          ex.printStackTrace()
+          None
+      } finally {
+        if (resources != null)
+          resources.close()
+      }
+
+    def flatMap[U](func: T => Option[U]): Option[U] =
+      try {
+        func(resources)
+      } catch {
+        case ex: Throwable =>
+          ex.printStackTrace()
+          None
+      } finally {
+        if (resources != null)
+          resources.close()
+      }
+  }
+
+  object Loan {
+    def apply[T <: {def close()}](value: T) = new Loan(value)
   }
 
   def findAsset(path: String): Option[File] = {
@@ -55,20 +83,15 @@ object Util {
       txt
   }
 
-  def getStringFromFile(name: String): Option[String] = {
-    val path = path2Resources + "/" + name
-    val file = new File(path)
-    if (file.exists() && file.isFile) {
-      val src = Source.fromFile(path)
-      try {
-        Some(src.getLines().fold("")(_ + _))
-      } catch {
-        case _: Throwable =>
-          None
-      } finally {
-        src.close()
-      }
-    } else None
+  def getStringFromResources(name: String): Option[String] = {
+    val cl = getClass.getClassLoader
+    for {
+      is <- Loan(cl.getResourceAsStream(name))
+      isr <- Loan(new InputStreamReader(is))
+      br <- Loan(new BufferedReader(isr))
+    } yield {
+      Iterator.continually(br.readLine()).takeWhile(_ != null).mkString
+    }
   }
 
   def getByteArrayFromFile(file: File): Array[Byte] = {
@@ -83,11 +106,11 @@ object Util {
   }
 
   def emitResponseFromFile(req: HttpRequest)
-                          (status: Status, path: String): HttpResponse = {
-    getStringFromFile(path) match {
+                          (status: Status, name: String): HttpResponse = {
+    getStringFromResources(name) match {
       case Some(body) =>
         val contentType = {
-          val ext = path.split('.').lastOption getOrElse ""
+          val ext = name.split('.').lastOption getOrElse ""
           "Content-Type" -> getContentType(ext).contentType
         }
         HttpResponse(req)(status, Map(contentType), body)
