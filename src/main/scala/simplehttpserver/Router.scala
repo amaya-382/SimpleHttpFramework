@@ -15,7 +15,7 @@ class Router {
   private val getObj = getObjectByName[Method]("simplehttpserver.impl") _
 
   //TODO: data取得元の調整
-  private val json = getStringFromFile("data.json") match {
+  private val json = getStringFromFile("routingTable.json") match {
     case Some(data) => JsonMethods.parse(data)
     case None => throw new Exception("route file not found")
   }
