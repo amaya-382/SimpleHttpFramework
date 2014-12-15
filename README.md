@@ -4,6 +4,7 @@ SimpleHttpServer
 ## Requirements
 * ./private/routingTable.json
 * ./public/{your assets}
+* path/to/controller/{your controller}.scala
 
 ## About routing table
 ```json
@@ -14,6 +15,13 @@ SimpleHttpServer
     "controller": full path to controller
   }
 ]
+```
+
+## About controller
+```scala
+object Controller {
+  def someAction: HttpRequest => HttpResponse = ???
+}
 ```
 
 ## Acknowledgement
