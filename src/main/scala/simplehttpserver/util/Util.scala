@@ -9,8 +9,6 @@ import scala.io.Source
 import scala.sys.process.BasicIO
 
 object Util {
-  val path2Private = "./private/"
-
   def using[T <: {def close()}, U](resources: T)(func: T => U) = {
     try {
       func(resources)
@@ -90,7 +88,7 @@ object Util {
   }
 
   def getStringFromFile(path: String): Option[String] = {
-    val fullPath = path2Private + path
+    val fullPath = path
     val file = new File(fullPath)
 
     try {
@@ -115,9 +113,16 @@ object Util {
     }
   }
 
+  //publicにあればそれを, なければResourcesからファイルを探し, その文字列を返します
   def emitResponseFromFile(req: HttpRequest)
                           (status: Status, name: String): HttpResponse = {
-    getStringFromResources(name) match {
+    val bodyOpt =
+      getStringFromFile("./public/" + name) match {
+        case None => getStringFromResources(name)
+        case bodyOpt => bodyOpt
+      }
+
+    bodyOpt match {
       case Some(body) =>
         val contentType = {
           val ext = name.split('.').lastOption getOrElse ""
