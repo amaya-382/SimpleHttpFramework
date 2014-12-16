@@ -12,7 +12,7 @@ class HtmlBuilder {
       if (pat.size == 0)
         acc
       else
-        go(pat.tail, acc.replaceAll(pat.head._1, pat.head._2))
+        go(pat.tail, acc.replaceAll("@" + pat.head._1, pat.head._2))
     }
 
     go(patterns, template)
