@@ -7,6 +7,7 @@ import simplehttpserver.util.Util._
 
 class HttpResponse(val reqOpt: Option[HttpRequest])
                   (val status: Status, val header: Map[String, String], val body: Array[Byte])
+
 object HttpResponse {
   def apply(req: HttpRequest = null)
            (status: Status, header: Map[String, String] = Map(),

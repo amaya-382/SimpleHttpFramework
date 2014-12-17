@@ -1,7 +1,8 @@
 package simplehttpserver
 
-import java.io.{BufferedReader, InputStreamReader, PrintStream}
+import java.io._
 import java.net.{InetSocketAddress, ServerSocket, Socket, URLDecoder}
+import java.util.zip.{GZIPOutputStream, Deflater}
 
 import simplehttpserver.impl._
 import simplehttpserver.util.Util._
@@ -65,7 +66,26 @@ case class HttpServer(port: Int) {
         ps.println(s"HTTP/1.1 ${res.status.code} ${res.status}")
     }
 
+    //header, body
+    val ecdOpt = res.reqOpt.flatMap(_.header.get("Accept-Encoding"))
+    ecdOpt match {
+      //gzip
+      case Some(e) if res.header.getOrElse("Content-Type", "").startsWith("text")
+        && e.indexOf("gzip") != -1 =>
+        writeWithGZIP(ps, res)
 
+      //deflate
+      case Some(e) if res.header.getOrElse("Content-Type", "").startsWith("text")
+        && e.indexOf("deflate") != -1 =>
+        writeWithDEFLATE(ps, res)
+
+      //non-compression
+      case _ =>
+        writeWithoutCompression(ps, res)
+    }
+  }
+
+  private def writeWithoutCompression(ps: PrintStream, res: HttpResponse): Unit = {
     //header
     res.header.map(kv => kv._1 + ": " + kv._2).foreach(ps.println)
 
@@ -73,8 +93,38 @@ case class HttpServer(port: Int) {
 
     //body
     ps.write(res.body)
+  }
 
-    ps.flush()
+  private def writeWithGZIP(ps: PrintStream, res: HttpResponse): Unit = {
+    //header
+    (res.header + ("Content-Encoding" -> "gzip"))
+      .map(kv => kv._1 + ": " + kv._2)
+      .foreach(ps.println)
+
+    ps.println()
+
+    //body
+    using(new GZIPOutputStream(ps)) { os =>
+      os.write(res.body)
+    }
+  }
+
+  private def writeWithDEFLATE(ps: PrintStream, res: HttpResponse): Unit = {
+    //header
+    (res.header + ("Content-Encoding" -> "deflate"))
+      .map(kv => kv._1 + ": " + kv._2).foreach(ps.println)
+
+    ps.println()
+
+    //body
+    val deflater = new Deflater()
+    deflater.setInput(res.body)
+    deflater.finish()
+    val buf = new Array[Byte](1024)
+    while (!deflater.finished()) {
+      deflater.deflate(buf)
+      ps.write(buf)
+    }
   }
 
   private def parseRequest(isr: InputStreamReader): Either[Throwable, HttpRequest] = {
