@@ -11,6 +11,7 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import scala.util.control.Exception._
 
 
 case class HttpServer(port: Int) {
@@ -48,6 +49,7 @@ case class HttpServer(port: Int) {
           case Right(r) =>
             router.routing(r)
           case Left(e) =>
+            //TODO: impl log
             emitResponseFromFile(null)(InternalServerError, "500.html")
         }
         using(new PrintStream(socket.getOutputStream)) {
@@ -117,65 +119,56 @@ case class HttpServer(port: Int) {
     ps.println()
 
     //body
-    val deflater = new Deflater()
-    deflater.setInput(res.body)
-    deflater.finish()
+    val deflator = new Deflater()
+    deflator.setInput(res.body)
+    deflator.finish()
     val buf = new Array[Byte](1024)
-    while (!deflater.finished()) {
-      deflater.deflate(buf)
+    while (!deflator.finished()) {
+      deflator.deflate(buf)
       ps.write(buf)
     }
   }
 
-  private def parseRequest(isr: InputStreamReader): Either[Throwable, HttpRequest] = {
-    try {
-      val request =
-        try {
-          readRequest(isr)
-        } catch {
-          case ex: Throwable =>
-            println(ex)
-            throw new Exception("fail in reading request")
-        }
+  private def parseRequest(isr: InputStreamReader): Either[String, HttpRequest] = {
+    allCatch either readRequest(isr) match {
+      case Left(ex) =>
+        Left(s"failed in reading request. ${ex.getMessage}")
 
-      request._1 getOrElse "" match {
-        case rGET(cont, ver) =>
-          println(s"get: $cont")
-          Right(HttpRequest((GET, cont, HttpVersion(ver)), request._2))
-        case rPOST(cont, ver) =>
-          println(s"post: $cont")
-          Right(HttpRequest((POST, cont, HttpVersion(ver)), request._2, request._3))
-        case rPUT(cont, ver) =>
-          println(s"put: $cont")
-          Right(HttpRequest((PUT, cont, HttpVersion(ver)), request._2, request._3))
-        case rDELETE(cont, ver) =>
-          println(s"del: $cont")
-          Right(HttpRequest((DELETE, cont, HttpVersion(ver)), request._2))
-        case rHEAD(cont, ver) =>
-          println(s"head: $cont")
-          Right(HttpRequest((HEAD, cont, HttpVersion(ver)), request._2, request._3))
-        case rOPTIONS(cont, ver) =>
-          println(s"opt: $cont")
-          Right(HttpRequest((OPTIONS, cont, HttpVersion(ver)), request._2, request._3))
-        case rTRACE(cont, ver) =>
-          println(s"trc: $cont")
-          Right(HttpRequest((TRACE, cont, HttpVersion(ver)), request._2, request._3))
-        case rCONNECT(cont, ver) =>
-          println(s"cct: $cont")
-          Right(HttpRequest((CONNECT, cont, HttpVersion(ver)), request._2, request._3))
-        case _ =>
-          println("oops!")
-          Left(new Exception("request didn't match"))
-      }
-    }
-    catch {
-      case _: Throwable =>
-        Left(new Exception("fail in parsing request"))
+      case Right(request) =>
+        request._1 match {
+          case Some(rGET(path, ver)) =>
+            println(s"GET: $path")
+            Right(HttpRequest((GET, path, HttpVersion(ver)), request._2))
+          case Some(rPOST(path, ver)) =>
+            println(s"POST: $path")
+            Right(HttpRequest((POST, path, HttpVersion(ver)), request._2, request._3))
+          case Some(rPUT(path, ver)) =>
+            println(s"PUT: $path")
+            Right(HttpRequest((PUT, path, HttpVersion(ver)), request._2, request._3))
+          case Some(rDELETE(path, ver)) =>
+            println(s"DELETE: $path")
+            Right(HttpRequest((DELETE, path, HttpVersion(ver)), request._2))
+          case Some(rHEAD(path, ver)) =>
+            println(s"HEAD: $path")
+            Right(HttpRequest((HEAD, path, HttpVersion(ver)), request._2, request._3))
+          case Some(rOPTIONS(path, ver)) =>
+            println(s"OPTION: $path")
+            Right(HttpRequest((OPTIONS, path, HttpVersion(ver)), request._2, request._3))
+          case Some(rTRACE(path, ver)) =>
+            println(s"TRACE: $path")
+            Right(HttpRequest((TRACE, path, HttpVersion(ver)), request._2, request._3))
+          case Some(rCONNECT(path, ver)) =>
+            println(s"CONNECT: $path")
+            Right(HttpRequest((CONNECT, path, HttpVersion(ver)), request._2, request._3))
+          case _ =>
+            println("oops!")
+            Left("request didn't match")
+        }
     }
   }
 
   private def readRequest(isr: InputStreamReader)
-  : (Option[String], Map[String, String], Option[String]) = {
+  : (Option[String], Map[String, String], Map[String, String]) = {
     val br = new BufferedReader(isr)
     val request = br.readLine()
 
@@ -193,21 +186,35 @@ case class HttpServer(port: Int) {
         else go(map)
       }
     }
-
     val header = go()
+
     (
       //request
-      if (request != null) Some(URLDecoder.decode(request, "utf-8")) else None,
+      Option(request) map (URLDecoder.decode(_, "utf-8")),
       //header
       header,
       //body if exists
-      if (header.contains("Content-Length")) {
-        Some({
-          val x = new Array[Char](header("Content-Length").toInt)
-          br.read(x)
-          URLDecoder.decode(x.mkString, "utf-8") //TODO: impl encoding
-        })
-      } else None)
+      if (header.contains("Content-Length") && header.contains("Content-Type")) {
+        val body = {
+          val bodyArr = new Array[Char](header("Content-Length").toInt)
+          br.read(bodyArr)
+          bodyArr.mkString
+        }
+
+        header("Content-Type") match {
+          case t if t.startsWith("application/x-www-form-urlencoded") =>
+            body.split('&').map(kv => {
+              val kvs = kv.split('=').map(URLDecoder.decode(_, "utf-8"))
+              kvs(0) -> kvs(1)
+            }).toMap
+          case t if t.startsWith("multipart/form-data") =>
+            println(URLDecoder.decode(body, "utf-8"))
+            ???
+          case _ =>
+            throw new Exception("found unexpected content type")
+        }
+      } else Map()
+      )
   }
 }
 
