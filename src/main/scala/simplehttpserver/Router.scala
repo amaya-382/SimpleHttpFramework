@@ -37,7 +37,7 @@ class Router {
       case Some(re) =>
         re._3._1.invoke(re._3._2).asInstanceOf[HttpRequest => HttpResponse](req)
       case None =>
-        emitResponseFromFile(req)(NotFound, "404.html")
+        emitError(req)(NotFound)
     }
   }
 

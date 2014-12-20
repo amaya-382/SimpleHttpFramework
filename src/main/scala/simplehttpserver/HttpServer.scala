@@ -21,15 +21,7 @@ case class HttpServer(port: Int) {
   println(s"start http server on $port")
 
   //regex
-  private val rGET = """(?i)^GET\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rPOST = """(?i)^POST\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rPUT = """(?i)^PUT\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rDELETE = """(?i)^DELETE\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rHEAD = """(?i)^HEAD\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rOPTIONS = """(?i)^OPTIONS\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rTRACE = """(?i)^TRACE\s([^\s]+)\sHTTP/(.+)$""".r
-  private val rCONNECT = """(?i)^CONNECT\s([^\s]+)\sHTTP/(.+)$""".r
-
+  private val rReq = """(?i)^(\w{3,7})\s(([^\s\.]|[^\s\.]\.)+)\sHTTP/(.+)$""".r
 
   def start(): Unit = {
     while (true) {
@@ -48,9 +40,9 @@ case class HttpServer(port: Int) {
         val res = parseRequest(in) match {
           case Right(r) =>
             router.routing(r)
-          case Left(e) =>
+          case Left(s) =>
             //TODO: impl log
-            emitResponseFromFile(null)(InternalServerError, "500.html")
+            emitError(null)(s)
         }
         using(new PrintStream(socket.getOutputStream)) {
           out => response(out, res)
@@ -129,40 +121,47 @@ case class HttpServer(port: Int) {
     }
   }
 
-  private def parseRequest(isr: InputStreamReader): Either[String, HttpRequest] = {
+  private def parseRequest(isr: InputStreamReader): Either[Status, HttpRequest] = {
     allCatch either readRequest(isr) match {
       case Left(ex) =>
-        Left(s"failed in reading request. ${ex.getMessage}")
+        println(s"failed in reading request. ${ex.getMessage}")
+        Left(BadRequest)
 
       case Right(request) =>
         request._1 match {
-          case Some(rGET(path, ver)) =>
-            println(s"GET: $path")
-            Right(HttpRequest((GET, path, HttpVersion(ver)), request._2))
-          case Some(rPOST(path, ver)) =>
-            println(s"POST: $path")
-            Right(HttpRequest((POST, path, HttpVersion(ver)), request._2, request._3))
-          case Some(rPUT(path, ver)) =>
-            println(s"PUT: $path")
-            Right(HttpRequest((PUT, path, HttpVersion(ver)), request._2, request._3))
-          case Some(rDELETE(path, ver)) =>
-            println(s"DELETE: $path")
-            Right(HttpRequest((DELETE, path, HttpVersion(ver)), request._2))
-          case Some(rHEAD(path, ver)) =>
-            println(s"HEAD: $path")
-            Right(HttpRequest((HEAD, path, HttpVersion(ver)), request._2, request._3))
-          case Some(rOPTIONS(path, ver)) =>
-            println(s"OPTION: $path")
-            Right(HttpRequest((OPTIONS, path, HttpVersion(ver)), request._2, request._3))
-          case Some(rTRACE(path, ver)) =>
-            println(s"TRACE: $path")
-            Right(HttpRequest((TRACE, path, HttpVersion(ver)), request._2, request._3))
-          case Some(rCONNECT(path, ver)) =>
-            println(s"CONNECT: $path")
-            Right(HttpRequest((CONNECT, path, HttpVersion(ver)), request._2, request._3))
+          case Some(rReq(method, path, _, ver)) =>
+            method.toUpperCase match {
+              case "GET" =>
+                println(s"GET: $path")
+                Right(HttpRequest((GET, path, HttpVersion(ver)), request._2))
+              case "POST" =>
+                println(s"POST: $path")
+                Right(HttpRequest((POST, path, HttpVersion(ver)), request._2, request._3))
+              case "PUT" =>
+                println(s"PUT: $path")
+                Right(HttpRequest((PUT, path, HttpVersion(ver)), request._2, request._3))
+              case "DELETE" =>
+                println(s"DELETE: $path")
+                Right(HttpRequest((DELETE, path, HttpVersion(ver)), request._2))
+              case "HEAD" =>
+                println(s"HEAD: $path")
+                Right(HttpRequest((HEAD, path, HttpVersion(ver)), request._2, request._3))
+              case "OPTIONS" =>
+                println(s"OPTIONS: $path")
+                Right(HttpRequest((OPTIONS, path, HttpVersion(ver)), request._2, request._3))
+              case "TRACE" =>
+                println(s"TRACE: $path")
+                Right(HttpRequest((TRACE, path, HttpVersion(ver)), request._2, request._3))
+              case "CONNECT" =>
+                println(s"CONNECT: $path")
+                Right(HttpRequest((CONNECT, path, HttpVersion(ver)), request._2, request._3))
+              case _ =>
+                println("found unexpected method")
+                Left(BadRequest)
+            }
           case _ =>
-            println("oops!")
-            Left("request didn't match")
+            println("request didn't match")
+            Left(NotFound)
         }
     }
   }
