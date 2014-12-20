@@ -204,7 +204,7 @@ case class HttpServer(port: Int) {
           case t if t.startsWith("application/x-www-form-urlencoded") =>
             body.split('&').map(kv => {
               val kvs = kv.split('=').map(URLDecoder.decode(_, "utf-8"))
-              kvs(0) -> kvs(1)
+              kvs(0) -> (if (kvs.size > 1) kvs(1) else "")
             }).toMap
           case t if t.startsWith("multipart/form-data") =>
             println(URLDecoder.decode(body, "utf-8"))
