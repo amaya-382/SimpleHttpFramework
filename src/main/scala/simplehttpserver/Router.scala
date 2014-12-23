@@ -1,7 +1,7 @@
 package simplehttpserver
 
 import simplehttpserver.impl._
-import simplehttpserver.util.Util._
+import simplehttpserver.util.EasyEmit
 
 import scala.reflect.runtime._
 import scala.util.matching.Regex
@@ -9,13 +9,13 @@ import scala.util.matching.Regex
 import org.json4s._
 import org.json4s.native.JsonMethods
 
-class Router {
+class Router extends EasyEmit {
   implicit private val formats = DefaultFormats
   private val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
   private val getObj = getObjectByName[Method]("simplehttpserver.impl") _
 
   //TODO: routingTable取得元の調整
-  private val json = getStringFromFile("./private/routingTable.json") match {
+    private val json = getStringFromFile("./private/routingTable.json") match {
     case Some(data) => JsonMethods.parse(data)
     case None => throw new Exception("route file not found")
   }

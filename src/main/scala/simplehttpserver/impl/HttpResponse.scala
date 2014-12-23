@@ -2,7 +2,7 @@ package simplehttpserver.impl
 
 import java.util.{Date, Locale}
 
-import simplehttpserver.util.Util._
+import simplehttpserver.util.Common._
 
 
 class HttpResponse(val reqOpt: Option[HttpRequest])

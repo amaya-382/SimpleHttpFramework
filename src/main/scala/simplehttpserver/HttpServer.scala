@@ -5,7 +5,8 @@ import java.net.{InetSocketAddress, ServerSocket, Socket, URLDecoder}
 import java.util.zip.{GZIPOutputStream, Deflater}
 
 import simplehttpserver.impl._
-import simplehttpserver.util.Util._
+import simplehttpserver.util.Common._
+import simplehttpserver.util.EasyEmit
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,7 +15,7 @@ import scala.concurrent.{Await, Future}
 import scala.util.control.Exception._
 
 
-case class HttpServer(port: Int) {
+class HttpServer(port: Int) extends EasyEmit {
   private val server = new ServerSocket()
   private val router = new Router()
   server.bind(new InetSocketAddress(port))
