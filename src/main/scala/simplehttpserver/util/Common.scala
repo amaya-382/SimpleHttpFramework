@@ -69,23 +69,4 @@ object Common {
     case "txt" | _ =>
       txt
   }
-
-  def escapeHTML(html: String): String = {
-    val sb = new StringBuffer()
-
-    html foreach {
-      case '&' => sb.append("&amp;")
-      case '<' => sb.append("&lt;")
-      case '>' => sb.append("&gt;")
-      case '"' => sb.append("&quot;")
-      case '\'' => sb.append("&#39;")
-      case s => sb.append(s)
-    }
-
-    sb.toString
-  }
-
-  def dropCtrlChar(str: String): String = {
-    str.replaceAll( """\p{C}""", "")
-  }
 }
