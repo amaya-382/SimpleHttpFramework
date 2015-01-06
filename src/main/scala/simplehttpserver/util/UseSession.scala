@@ -1,11 +1,13 @@
 package simplehttpserver.util
 
+import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.{read, write}
 
 import simplehttpserver.impl.HttpSession
 import simplehttpserver.util.Common._
 
 object UseSession extends UseResources {
+  implicit private val formats = DefaultFormats
   private val path2SessionData = "./private/session.json"
 
   def getSessionBySessionId(sessionId: String): Option[HttpSession] = {
