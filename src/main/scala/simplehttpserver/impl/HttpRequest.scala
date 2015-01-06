@@ -12,10 +12,14 @@ case class HttpRequest(req: (Method, String, HttpVersion),
   private var _session = getSessionByRequest
   def session = _session
 
-  def refreshSession: HttpSession = {
-    _session foreach (s => deleteSession(s.sessionId))
+  def refreshSession(inherit: Boolean): HttpSession = {
+    val deleted = _session flatMap (s => deleteSession(s.sessionId))
+    lazy val deletedData = (deleted map (_.data)) getOrElse Map()
     val newSession =
-      createNewSession(header("Host") + new Date, body.getOrElse("id", "")) //仮
+      createNewSession(
+        seed = header("Host") + new Date,
+        boundId = body.getOrElse("id", ""),
+        data = if (inherit) deletedData else Map()) //仮
     _session = Some(newSession)
     newSession
   }

@@ -1,5 +1,7 @@
 package simplehttpserver.util
 
+import java.util.Date
+
 import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.{read, write}
 
@@ -18,17 +20,19 @@ object UseSession extends UseResources {
     getAllSessions find (_.id == id)
   }
 
-  def getAllSessions: List[HttpSession] = {
+  def getAllSessions: Set[HttpSession] = {
     getStringFromFile(path2SessionData) match {
-      case Some(json) => read[List[HttpSession]](json)
+      case Some(json) => read[Set[HttpSession]](json)
       case None => throw new Exception("route file not found")
     }
   }
 
-  def createNewSession(seed: String, boundId: String): HttpSession = {
+  def createNewSession(seed: String, boundId: String,
+                       expries: Option[Date] = None,
+                       data: Map[String, String] = Map()): HttpSession = {
     val sessionId = Security.hashBySHA384(seed)
-    val newSession = HttpSession(sessionId, boundId, None, Map())
-    val updated = getAllSessions :+ newSession
+    val newSession = HttpSession(sessionId, boundId, expries, data)
+    val updated = getAllSessions + newSession
 
     writeWithResult(path2SessionData)(pw =>
       pw.print(write(updated)))(ex => {
@@ -39,19 +43,19 @@ object UseSession extends UseResources {
     newSession
   }
 
-  def deleteSession(sessionId: String): Boolean = {
+  def deleteSession(sessionId: String): Option[HttpSession] = {
     val sessions = getAllSessions
-    val newSessions = sessions filter (_.sessionId != sessionId)
-    val updated = sessions != newSessions
+    val sessionOpt = sessions find (_.sessionId == sessionId)
 
-    if (updated)
-      writeWithResult(path2SessionData)(pw =>
-        pw.print(write(newSessions)))(ex => {
-        println(ex)
-        throw new Exception("session data not found")
+    sessionOpt map (
+      session => {
+        val newSessions = sessions - session
+        writeWithResult(path2SessionData)(pw =>
+          pw.print(write(newSessions)))(ex => {
+          println(ex)
+          throw new Exception("session data not found")
+        })
+        session
       })
-
-    updated
   }
-
 }
