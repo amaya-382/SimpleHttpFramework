@@ -69,4 +69,10 @@ object Common {
     case "txt" | _ =>
       txt
   }
+
+  def byteArray2HexString(bytes: Array[Byte]): String = {
+    val sb = new StringBuilder
+    bytes foreach { s => sb.append(s.formatted("%02x"))}
+    sb.toString()
+  }
 }
