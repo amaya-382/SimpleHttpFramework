@@ -1,30 +1,22 @@
 package simplehttpserver.impl
 
-import simplehttpserver.util.Security
+import simplehttpserver.util.UseSession._
 
 import java.net.URLDecoder
 import java.util.Date
 
 case class HttpRequest(req: (Method, String, HttpVersion),
-                       header: Map[String, String], body: Map[String, String] = Map()) {
+                       header: Map[String, String],
+                       body: Map[String, String] = Map()) {
   val cookie = getCookie
-  private var _session = getSession
+  private var _session = getSessionByRequest
   def session = _session
 
   def getNewSession: HttpSession = {
-    val SESSIONID = Security.hashBySHA384(header("Host") + new Date) //仮
-    val newSession = HttpSession(SESSIONID, None, Map())
+    val newSession =
+      createNewSession(header("Host") + new Date, body.getOrElse("id", "")) //仮
     _session = Some(newSession)
     newSession
-  }
-
-  private def getSession: Option[HttpSession] = {
-    getCookie match {
-      case c if c.size > 0 =>
-        c.get("SESSIONID") map (HttpSession(_, None, Map()))
-      case _ =>
-        None
-    }
   }
 
   private def getCookie: Map[String, String] = {
@@ -35,5 +27,9 @@ case class HttpRequest(req: (Method, String, HttpVersion),
       }).toMap
     else
       Map()
+  }
+
+  private def getSessionByRequest: Option[HttpSession] = {
+    cookie.get("SESSIONID") flatMap getSessionBySessionId
   }
 }
