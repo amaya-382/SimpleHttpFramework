@@ -12,7 +12,8 @@ case class HttpRequest(req: (Method, String, HttpVersion),
   private var _session = getSessionByRequest
   def session = _session
 
-  def getNewSession: HttpSession = {
+  def refreshSession: HttpSession = {
+    _session foreach (s => deleteSession(s.sessionId))
     val newSession =
       createNewSession(header("Host") + new Date, body.getOrElse("id", "")) //仮
     _session = Some(newSession)
