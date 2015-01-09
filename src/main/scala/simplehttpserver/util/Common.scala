@@ -64,6 +64,8 @@ object Common {
       png
     case "gif" =>
       gif
+    case "svg" =>
+      svg
     case "pdf" =>
       pdf
     case "zip" =>
