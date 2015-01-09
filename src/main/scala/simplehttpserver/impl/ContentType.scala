@@ -40,6 +40,11 @@ case object gif extends ContentType {
   val contentType = "image/gif"
 }
 
+case object svg extends ContentType {
+  val ownType = "svg"
+  val contentType = "image/svg+xml"
+}
+
 case object pdf extends ContentType {
   val ownType = "pdf"
   val contentType = "application/pdf"
