@@ -28,10 +28,10 @@ object UseSession extends UseResources {
   }
 
   def createNewSession(seed: String, boundId: String,
-                       expries: Option[Date] = None,
+                       expires: Option[Date] = None,
                        data: Map[String, String] = Map()): HttpSession = {
     val sessionId = Security.hashBySHA384(seed)
-    val newSession = HttpSession(sessionId, boundId, expries, data)
+    val newSession = HttpSession(sessionId, boundId, expires, data)
     val updated = getAllSessions + newSession
 
     writeWithResult(path2SessionData)(pw =>
