@@ -1,6 +1,10 @@
 package simplehttpserver.util
 
+import java.io.PrintWriter
+
 import simplehttpserver.impl._
+
+import scala.util.control.NonFatal
 
 object Common {
   def using[T <: {def close()}, U](resources: T)(func: T => U) = {
@@ -68,5 +72,26 @@ object Common {
       exe
     case "txt" | _ =>
       txt
+  }
+
+  def byteArray2HexString(bytes: Array[Byte]): String = {
+    val sb = new StringBuilder
+    bytes foreach { s => sb.append(s.formatted("%02x"))}
+    sb.toString()
+  }
+
+  def writeWithResult[T]
+  (path: String)
+  (write: PrintWriter => T)
+  (fail: Throwable => T): T = {
+    val pw = new PrintWriter(path)
+    try {
+      write(pw)
+    } catch {
+      case NonFatal(ex) =>
+        fail(ex)
+    } finally {
+      pw.close()
+    }
   }
 }
