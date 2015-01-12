@@ -6,6 +6,9 @@ Simple Http Framework
 * ./public/{your assets}
 * path/to/controller/{your controller}.scala
 
+## Example project
+[Board](https://github.com/amaya-382/Board)
+
 ## About routing table
 ```json
 [
