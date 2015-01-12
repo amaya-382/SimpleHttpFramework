@@ -12,7 +12,7 @@ import org.json4s.native.JsonMethods
 class Router extends EasyEmit {
   implicit private val formats = DefaultFormats
   private val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
-  private val getObj = getObjectByName[Method]("simplehttpserver.impl") _
+  private val getObj = getObjectByName[Method]("simplehttpframework.impl") _
 
   //TODO: routingTable取得元の調整
   private val json = getStringFromFile("./private/routingTable.json") match {
