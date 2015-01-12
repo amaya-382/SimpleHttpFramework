@@ -8,7 +8,7 @@ Simple Http Framework
 
 ## Usage
 add following to your `build.sbt`
-```
+```scala
 lazy val root = project.in(file(".")).dependsOn(simpleHttpFramework)
 
 lazy val simpleHttpFramework = uri("git://github.com/amaya-382/SimpleHttpFramework.git")
