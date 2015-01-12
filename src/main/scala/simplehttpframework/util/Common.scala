@@ -1,8 +1,8 @@
-package simplehttpserver.util
+package simplehttpframework.util
 
 import java.io.PrintWriter
 
-import simplehttpserver.impl._
+import simplehttpframework.impl._
 
 import scala.util.control.NonFatal
 

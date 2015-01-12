@@ -1,4 +1,4 @@
-package simplehttpserver.impl
+package simplehttpframework.impl
 
 sealed abstract class ContentType {
   val ownType: String

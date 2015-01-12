@@ -1,4 +1,4 @@
-package simplehttpserver.util.implicits
+package simplehttpframework.util.implicits
 
 object Implicit {
   implicit def string2BytesArray(str: String): Array[Byte] =

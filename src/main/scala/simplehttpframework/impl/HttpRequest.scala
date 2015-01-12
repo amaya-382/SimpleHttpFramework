@@ -1,6 +1,6 @@
-package simplehttpserver.impl
+package simplehttpframework.impl
 
-import simplehttpserver.util.UseSession._
+import simplehttpframework.util.UseSession._
 
 import java.net.URLDecoder
 import java.util.Date

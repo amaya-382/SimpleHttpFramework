@@ -1,9 +1,9 @@
-package simplehttpserver.util
+package simplehttpframework.util
 
 import java.security.MessageDigest
 
-import simplehttpserver.util.Common.byteArray2HexString
-import simplehttpserver.util.implicits.Implicit._
+import simplehttpframework.util.Common.byteArray2HexString
+import simplehttpframework.util.implicits.Implicit._
 
 object Security {
   private val sha384 = MessageDigest.getInstance("SHA-384")

@@ -1,8 +1,8 @@
-package simplehttpserver.util
+package simplehttpframework.util
 
 import java.io._
 
-import simplehttpserver.util.Common._
+import simplehttpframework.util.Common._
 
 import scala.io.Source
 import scala.sys.process.BasicIO

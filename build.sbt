@@ -1,4 +1,4 @@
-name := "Simple Http Server"
+name := "Simple Http Framework"
 
 version := "0.5.0"
 

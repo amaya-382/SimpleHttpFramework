@@ -1,12 +1,12 @@
-package simplehttpserver
+package simplehttpframework
 
 import java.io._
 import java.net.{InetSocketAddress, ServerSocket, Socket, URLDecoder}
 import java.util.zip.{GZIPOutputStream, Deflater}
 
-import simplehttpserver.impl._
-import simplehttpserver.util.Common._
-import simplehttpserver.util.EasyEmit
+import simplehttpframework.impl._
+import simplehttpframework.util.Common._
+import simplehttpframework.util.EasyEmit
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global

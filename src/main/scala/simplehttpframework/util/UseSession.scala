@@ -1,12 +1,12 @@
-package simplehttpserver.util
+package simplehttpframework.util
 
 import java.util.Date
 
 import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.{read, write}
 
-import simplehttpserver.impl.HttpSession
-import simplehttpserver.util.Common._
+import simplehttpframework.impl.HttpSession
+import simplehttpframework.util.Common._
 
 object UseSession extends UseResources {
   implicit private val formats = DefaultFormats

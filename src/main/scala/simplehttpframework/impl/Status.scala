@@ -1,4 +1,4 @@
-package simplehttpserver.impl
+package simplehttpframework.impl
 
 sealed abstract class Status(val code: Int) {
   def toString: String

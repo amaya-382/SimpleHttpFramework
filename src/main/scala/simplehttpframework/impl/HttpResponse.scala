@@ -1,8 +1,8 @@
-package simplehttpserver.impl
+package simplehttpframework.impl
 
 import java.util.{Date, Locale}
 
-import simplehttpserver.util.Common._
+import simplehttpframework.util.Common._
 
 
 class HttpResponse(val reqOpt: Option[HttpRequest])

@@ -1,8 +1,8 @@
-package simplehttpserver.util
+package simplehttpframework.util
 
-import simplehttpserver.impl._
-import simplehttpserver.util.implicits.Implicit._
-import simplehttpserver.util.Common._
+import simplehttpframework.impl._
+import simplehttpframework.util.implicits.Implicit._
+import simplehttpframework.util.Common._
 
 trait EasyEmit extends UseResources {
   //publicにあればそれを, なければResourcesからファイルを探し, その文字列を返します
