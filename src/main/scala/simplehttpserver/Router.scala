@@ -25,9 +25,9 @@ class Router extends EasyEmit {
       JArray(arr) <- json
       JObject(table) <- arr
       JField("method", JString(method)) <- table
-      JField("regex", JString(regex)) <- table
+      JField("pattern", JString(pattern)) <- table
       JField("controller", JString(controller)) <- table
-    } yield (getObj(method), regex.r, getMethodByName(controller))
+    } yield (getObj(method), pattern.r, getMethodByName(controller))
 
   def routing(implicit req: HttpRequest): HttpResponse = {
     routes
