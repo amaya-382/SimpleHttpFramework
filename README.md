@@ -1,5 +1,5 @@
-SimpleHttpServer
-================
+Simple Http Framework
+=====================
 
 ## Requirements
 * ./private/routingTable.json
@@ -11,8 +11,8 @@ SimpleHttpServer
 [
   {
     "method": method,
-    "regex": url pattern,
-    "controller": full path to controller
+    "pattern": url pattern,
+    "controller": name of controller with namespace
   }
 ]
 ```
