@@ -15,8 +15,7 @@ class Router extends EasyEmit {
   private val getObj = getObjectByName[Method]("simplehttpserver.impl") _
 
   //TODO: routingTable取得元の調整
-  //  private val json = getStringFromFile("./private/routingTable.json") match {
-  private val json = getStringFromFile("./src/test/resources/private/routingTable.json") match {
+  private val json = getStringFromFile("./private/routingTable.json") match {
     case Some(data) => JsonMethods.parse(data)
     case None => throw new Exception("route file not found")
   }
