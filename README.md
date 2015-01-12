@@ -6,6 +6,14 @@ Simple Http Framework
 * ./public/{your assets}
 * path/to/controller/{your controller}.scala
 
+## Usage
+add following to your `build.sbt`
+```
+lazy val root = project.in(file(".")).dependsOn(simpleHttpFramework)
+
+lazy val simpleHttpFramework = uri("git://github.com/amaya-382/SimpleHttpFramework.git")
+```
+
 ## Project example
 [Board](https://github.com/amaya-382/Board)
 
