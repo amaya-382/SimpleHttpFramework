@@ -14,10 +14,7 @@ lazy val root = project.in(file(".")).dependsOn(simpleHttpFramework)
 lazy val simpleHttpFramework = uri("git://github.com/amaya-382/SimpleHttpFramework.git")
 ```
 
-## Project example
-[Board](https://github.com/amaya-382/Board)
-
-## About routing table
+### About routing table
 ```json
 [
   {
@@ -28,12 +25,15 @@ lazy val simpleHttpFramework = uri("git://github.com/amaya-382/SimpleHttpFramewo
 ]
 ```
 
-## About controller
+### About controller
 ```scala
 object Controller {
   def someAction: HttpRequest => HttpResponse = ???
 }
 ```
+
+## Project example
+[Board](https://github.com/amaya-382/Board)
 
 ## Acknowledgement
 * [json4s](https://github.com/json4s/json4s)
