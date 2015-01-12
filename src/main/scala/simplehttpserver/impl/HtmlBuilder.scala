@@ -9,7 +9,7 @@ class HtmlBuilder {
     @tailrec
     def go(pat: Seq[(String, String)], acc: String): String = {
       if (pat.size == 0)
-        acc.replaceAll( """@\w+?\(\((.+?)\)\)""", "$1")
+        acc.replaceAll( """(?<!@)@\w+?\(\((.+?)\)\)""", "$1")
       else
         go(pat.tail, acc.replaceAll("(?<!@)@" + pat.head._1,
           pat.head._2.replaceAll("@", "@@")))
