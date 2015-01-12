@@ -179,7 +179,6 @@ class HttpServer(port: Int) extends EasyEmit {
       if (line == null || line == "") map
       else {
         val kv = line.splitAt(line.indexOf(":"))
-        println(s"kv: $kv")
         if (kv._1.nonEmpty) {
           go(map + (kv._1.trim -> (if (kv._2.nonEmpty) kv._2.tail.trim else "")))
         }
@@ -187,6 +186,7 @@ class HttpServer(port: Int) extends EasyEmit {
       }
     }
     val header = go()
+    header.foreach(println)
 
     (
       //request
