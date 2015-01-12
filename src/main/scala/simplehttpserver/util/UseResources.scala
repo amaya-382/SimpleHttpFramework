@@ -6,6 +6,7 @@ import simplehttpserver.util.Common._
 
 import scala.io.Source
 import scala.sys.process.BasicIO
+import scala.util.control.NonFatal
 
 trait UseResources {
   def getStringFromResources(name: String): Option[String] = {
@@ -29,7 +30,7 @@ trait UseResources {
       else
         None
     } catch {
-      case _: Throwable =>
+      case NonFatal(_) =>
         None
     }
   }
@@ -40,7 +41,7 @@ trait UseResources {
       BasicIO.transferFully(new FileInputStream(file), out)
       out.toByteArray
     } catch {
-      case _: Throwable =>
+      case NonFatal(_) =>
         Array()
     }
   }

@@ -24,7 +24,7 @@ object Common {
       try {
         Option(func(resources))
       } catch {
-        case ex: Throwable =>
+        case NonFatal(ex) =>
           ex.printStackTrace()
           None
       } finally {
@@ -36,7 +36,7 @@ object Common {
       try {
         func(resources)
       } catch {
-        case ex: Throwable =>
+        case NonFatal(ex) =>
           ex.printStackTrace()
           None
       } finally {
